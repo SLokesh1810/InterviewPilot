@@ -1,0 +1,15 @@
+# Virtual environments
+myenv310/
+
+# Personal settings
+.env
+
+# Audio & data
+data/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Used for checking new functions without performing full run
+check.py
