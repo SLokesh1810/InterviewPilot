@@ -16,3 +16,5 @@ soundfile>=0.12
 tqdm>=4.65
 
 python-dotenv>=0.21
+
+sqlalchemy>=2.0

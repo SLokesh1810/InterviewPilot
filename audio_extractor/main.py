@@ -1,7 +1,3 @@
-"""
-Main orchestration for audio analysis.
-"""
-
 import os
 import librosa
 import gc
@@ -109,4 +105,4 @@ def main(base_path, audio_filename,
     print("✅ ANALYSIS COMPLETE!")
     print("="*50 + "\n")
 
-    return analysis_results if return_json else None
+    return analysis_results, transcript if return_json else None

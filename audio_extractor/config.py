@@ -1,7 +1,3 @@
-"""
-Configuration constants for audio analysis.
-"""
-
 import re
 
 # ----------------------------

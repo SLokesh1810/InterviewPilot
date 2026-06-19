@@ -1,7 +1,3 @@
-"""
-Entry point for audio analysis.
-"""
-
 import os
 from audio_analyser import main
 
