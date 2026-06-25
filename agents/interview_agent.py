@@ -4,7 +4,6 @@ from agents.llm_generator import llm_generation
 
 def generate_question(
     position,
-    role,
     experience_level,
     question_type,
     current_stage
@@ -17,7 +16,6 @@ def generate_question(
     You are a senior hiring manager.
 
     Position: {position}
-    Role: {role}
     Experience Level: {experience_level}
     Interview Stage: {current_stage}
     Question Type: {question_type}
@@ -92,18 +90,8 @@ def follow_up_question(
         response = json.loads(response)
 
         return {
-            "follow_up":
-                bool(
-                    response.get(
-                        "follow_up",
-                        False
-                    )
-                ),
-
-            "question":
-                response.get(
-                    "question"
-                )
+            "follow_up":bool(response.get("follow_up",False)),
+            "question": response.get("question")
         }
 
     except Exception as e:

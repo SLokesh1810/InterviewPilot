@@ -1,6 +1,6 @@
 import os
 from dotenv import load_env
-from audio_extractor.main import main
+from audio_extractor.main import get_transcript, analyze_audio
 
 load_env()
 BASE_PATH = os.getenv("BASE_PATH")
@@ -15,8 +15,24 @@ def get_confidence_report(section, confidence_drift):
         "fillers": confidence_drift[section]["fillers"]["total_fillers"]["count"]
     }
 
-def analyse_audio(audio_name):
-    report, transcript = main(
+def retrieve_transcript(audio_name):
+    transcript_details = get_transcript(
+        base_path=BASE_PATH,
+        audio_filename=audio_name
+    )
+    return transcript_details
+
+
+async def analyse_transcript(
+    audio_name,
+    audio_duration_sec,
+    pause_data,
+    transcript
+):
+    report = analyze_audio(
+        transcript=transcript,
+        audio_duration_sec=audio_duration_sec,
+        pause_data=pause_data,
         base_path=BASE_PATH,
         audio_filename=audio_name,
         model_size="small",
@@ -69,4 +85,4 @@ def analyse_audio(audio_name):
         }
     }
 
-    return response_report, transcript
+    return response_report

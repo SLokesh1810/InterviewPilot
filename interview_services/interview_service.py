@@ -2,7 +2,7 @@ from datetime import datetime
 
 from database.interview_models import (
     ActiveInterview,
-    InterviewReport
+    InterviewHistory
 )
 
 from report_service import final_score_update
@@ -91,6 +91,7 @@ def save_response(
     transcript,
     technical_evaluation,
     communication_score,
+    report,
     audio_path=None
 ):
     interview = get_interview(
@@ -100,6 +101,8 @@ def save_response(
 
     if not interview:
         return None
+    
+    interview.report = report
 
     history = (
         interview.interview_data
@@ -135,12 +138,24 @@ def save_response(
         "history": history
     }
 
-    interview.question_count += 1
     db.commit()
     db.refresh(interview)
 
     return interview
 
+
+def increment_question_count(
+    db,
+    interview_id
+):
+    interview = get_interview(
+        db,
+        interview_id
+    )
+
+    interview.question_count += 1
+
+    return interview
 
 def increment_question_switch(
     db,
@@ -177,20 +192,11 @@ def update_status(
         interview.question_count
     )
 
-    if q_count < 2:
-        status = "intro"
-
-    elif q_count < 5:
-        status = "basic technical"
-
-    elif q_count < 8:
-        status = "advanced technical"
-
-    elif q_count < 10:
-        status = "behavioural"
-
-    else:
-        status = "final"
+    if q_count < 2: status = "intro"
+    elif q_count < 5: status = "basic technical"
+    elif q_count < 8: status = "advanced technical"
+    elif q_count < 10: status = "behavioural"
+    else: status = "completed"
 
     interview.status = status
     db.commit()
@@ -240,15 +246,10 @@ def is_interview_completed(
         return True
 
     if (
-        interview.question_count >= 10
+        interview.status == 'completed'
         or
         interview.remaining_time <= 0
     ):
-        interview.status = (
-            "completed"
-        )
-
-        db.commit()
         return True
 
     return False
@@ -256,8 +257,7 @@ def is_interview_completed(
 def complete_interview(
     db,
     interview_id,
-    report_json,
-    scores
+    report_json
 ):
     interview = get_interview(
         db,
@@ -267,14 +267,17 @@ def complete_interview(
     if not interview:
         return None
 
+    scores = report_json['scores']
+
     ovr = scores["overall"]
     tech = scores["technical"]
     comm = scores["communication"]
     
 
-    final_report = InterviewReport(
+    final_report = InterviewHistory(
         user_id=interview.user_id,
         position=interview.position,
+        role=interview.role,
         experience_level=interview.experience_level,
         overall_score=ovr,
         technical_score=tech,

@@ -16,7 +16,7 @@ def update_confidence(
         "fillers": current_confidence["fillers"] + new_confidence["fillers"]
     }
 
-def update_report(
+async def update_report(
     current_report,
     analyser_report,
     technical_evaluation
