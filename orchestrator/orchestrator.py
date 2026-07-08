@@ -1,7 +1,4 @@
-
-import asyncio
-
-from interview_services.interview_service import(
+from services.interview_service import(
     create_interview,
     update_current_question,
     update_status,
@@ -11,13 +8,15 @@ from interview_services.interview_service import(
     increment_question_switch,
     increment_question_count,
     complete_interview
-
 )
-from interview_services.audio_service import(
+from services.file_service import(
+    delete_audio_file
+)
+from services.audio_service import(
     retrieve_transcript,
     analyse_transcript
 )
-from interview_services.report_service import(
+from services.report_service import(
     update_report,
     final_score_update
 )
@@ -35,22 +34,22 @@ def start_interview(
     user_id,
     position,
     experience,
-    difficulty
+    role
 ):
-    interview = create_interview(
+    exists, interview = create_interview(
         db=db,
         user_id=user_id,
         position=position,
-        experience=experience,
-        difficulty=difficulty
+        experience_level=experience,
+        role=role
     )
     
-    if interview == None:
-        return None
+    if exists:
+        return True, interview
 
     question = generate_question(
         position=position,
-        difficulty=difficulty,
+        experience_level=experience,
         current_stage=interview.status,
         question_type=interview.status
     )
@@ -61,7 +60,7 @@ def start_interview(
         question=question
     )
 
-    return interview
+    return False, interview
 
 async def next_question_generation(
     db,
@@ -71,7 +70,7 @@ async def next_question_generation(
     
     follow_up = follow_up_question(
         previous_answer=answer,
-        previous_question=interview.question
+        previous_question=interview.current_question
     )
 
     if follow_up['follow_up']:
@@ -91,7 +90,12 @@ async def next_question_generation(
         db=db,
         interview_id=interview.id
     ):
-        finalize_report()  
+        finish_interview(
+            db=db,
+            interview_id=interview.id
+        )
+
+        return None
         
     
     nxt_question = generate_question(
@@ -104,7 +108,7 @@ async def next_question_generation(
     return nxt_question
     
 
-async def update_question(
+async def submit_question(
     db,
     interview_id,
     audio_name
@@ -114,49 +118,68 @@ async def update_question(
         interview_id=interview_id
     )
 
-    current_question = interview.question
+    current_question = interview.current_question
     
-    transcript_details = retrieve_transcript(
-        audio_filename=audio_name
-    )
+    try:
+        transcript_details = retrieve_transcript(
+            audio_name=audio_name
+        )
 
-    question = await next_question_generation(
-        db=db,
-        question=interview.current_question,
-        answer=transcript_details['transcript']
-    )
+        if transcript_details is None:
+            return {
+                "success": False,
+                "message": "Unable to transcribe audio."
+            }
 
-    analysis_report = await analyse_transcript(
-        transcript=transcript_details['transcript'],
-        audio_name=audio_name,
-        audio_duration_sec=transcript_details['audio_duration_sec'],
-        pause_data=transcript_details['pause_data']
-    )
+        analysis_report = await analyse_transcript(
+            audio_name=transcript_details['audio_path'],
+            audio_duration_sec=transcript_details['audio_duration_sec'],
+            pause_data=transcript_details['pause_data'],
+            transcript=transcript_details['transcript']
+        )
 
-    technical_score = answer_evaluation(
-        question=current_question,
-        answer=transcript_details['answer']
-    )
+        technical_score = answer_evaluation(
+            question=current_question,
+            answer=transcript_details['transcript']
+        )
+        
+        new_report = await update_report(
+            analyser_report=analysis_report,
+            current_report=interview.report_data,
+            technical_evaluation=technical_score
+        )
+        
+        interview = save_response(
+            db=db,
+            interview_id=interview.id,
+            question=current_question,
+            transcript=transcript_details['transcript'],
+            technical_evaluation=technical_score,
+            communication_score=new_report['score']['communication'],
+            report=new_report,
+            audio_path=transcript_details['audio_path']
+        )
+
+        question = await next_question_generation(
+            db=db,
+            interview=interview,
+            answer=transcript_details['transcript']
+        )
+        
+        delete_audio_file(transcript_details['audio_path'])
+
+        return {
+            "next_question": question,
+            "question_number": interview.question_count,
+            "status": interview.status,
+            "remaining_time": interview.remaining_time,
+            "completed": interview.status == "completed"
+        }
     
-    new_report = update_report(
-        analyser_report=analysis_report,
-        current_report=interview.report,
-        technical_evaluation=technical_score
-    )
-    
-    interview = save_response(
-        interview_id=interview.id,
-        question=current_question,
-        transcript=transcript_details['transcript'],
-        technical_evaluation=technical_score,
-        communication_score=new_report['score']['communication'],
-        report=new_report,
-        audio_path=audio_name
-    )
+    finally:
+        delete_audio_file(audio_name)
 
-    return question
-
-def finalize_report(
+def finish_interview(
     db,
     interview_id
 ):
@@ -166,8 +189,8 @@ def finalize_report(
     )
 
     report = final_score_update(
-        report=interview.id,
-        question_count=interview_id.question_count
+        report=interview.report_data,
+        question_count=interview.question_count
     )
 
     final_report = complete_interview(
@@ -176,4 +199,4 @@ def finalize_report(
         report_json=report
     )
 
-    return final_report
+    return report

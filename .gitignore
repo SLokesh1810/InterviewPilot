@@ -2,7 +2,7 @@
 myenv310/
 
 # Personal settings
-.env
+.env*
 
 # Audio & data
 data/
@@ -13,3 +13,6 @@ __pycache__/
 
 # Used for checking new functions without performing full run
 check.py
+
+# Test file - test results notes
+corrections.txt

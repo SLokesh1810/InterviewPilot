@@ -2,16 +2,12 @@
 Sentence structure and length analysis.
 """
 
-import re
-from ..audio_extractor.config import SENTENCE_PATTERN, WORD_PATTERN
-from .text_processing import clean_text
-
 def analyze_raw_sentences(transcript):
     """
     Detect natural speech issues without artificial splitting.
     """
     import re
-    from ..audio_extractor.config import WORD_PATTERN
+    from audio_extractor.config import WORD_PATTERN
 
     # naive split (still useful for detection)
     rough_sentences = re.split(r'[.!?]+', transcript)

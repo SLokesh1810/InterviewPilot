@@ -10,10 +10,15 @@ from .config import (
     DEFAULT_TOP_PHRASES
 )
 
-from ..audio_analyser.pause_analysis import analyze_pauses
-from ..audio_analyser.pipeline import analyze_transcript
-from ..audio_analyser.transcription import transcribe_audio, save_transcript, load_transcript, verify_transcript_integrity
-from ..audio_analyser.output import print_analysis_results, save_json as save_json_output
+from audio_analyser.pause_analysis import analyze_pauses
+from audio_analyser.pipeline import analyze_transcript
+from audio_analyser.transcription import (
+    transcribe_audio
+)
+from audio_analyser.output import (
+    print_analysis_results,
+    save_json as save_json_output
+)
 
 def get_transcript(
     base_path,
@@ -27,9 +32,8 @@ def get_transcript(
     audio_path = os.path.join(base_path, audio_filename)
 
     # Ensure audio exists
-    if not os.path.exists(audio_path):
-        print("Audio not found, converting from video...")
-        audio_path = convertor.convert(audio_path)
+    print("Audio not found, converting from video...")
+    audio_path = convertor.convert(audio_path)
 
     # Load audio
     audio_array, sr = librosa.load(audio_path, sr=16000)
@@ -37,32 +41,14 @@ def get_transcript(
 
     pause_data = analyze_pauses(audio_path)
 
-    # Check for existing transcript
-    transcript = load_transcript(base_path, audio_filename)
 
-    if transcript:
-        print("Transcript found, skipping transcription")
-
-        if verify_transcript_integrity(base_path, audio_filename):
-            print("Integrity verified!")
-        else:
-            print("Unverified transcript, re-transcripting")
-            transcript = transcribe_audio(audio_array, model_size)
-
-    else:
-        print(f"Starting transcription ({model_size})...")
-        transcript = transcribe_audio(audio_array, model_size)
-
-        save_transcript(
-            transcript,
-            base_path,
-            audio_filename
-        )
+    transcript = transcribe_audio(audio_array, model_size)
 
     del audio_array
     gc.collect()
 
     return {
+        "audio_path": audio_path,
         "transcript": transcript,
         "audio_duration_sec": audio_duration_sec,
         "pause_data": pause_data

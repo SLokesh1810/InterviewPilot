@@ -1,8 +1,8 @@
 import os
-from dotenv import load_env
+from dotenv import load_dotenv
 from audio_extractor.main import get_transcript, analyze_audio
 
-load_env()
+load_dotenv()
 BASE_PATH = os.getenv("BASE_PATH")
 
 def get_word_count(category):
@@ -35,7 +35,6 @@ async def analyse_transcript(
         pause_data=pause_data,
         base_path=BASE_PATH,
         audio_filename=audio_name,
-        model_size="small",
         top_k=3,
         long_sentence_threshold=25,
         top_phrases=3,
@@ -66,7 +65,7 @@ async def analyse_transcript(
             "self_reference": get_word_count(word_categories["Self references"]),
             "connectors": get_word_count(word_categories["Connectors (basic)"]) + get_word_count(word_categories["Connectors (advanced)"]),
             "action_verbs": get_word_count(word_categories["Action verbs"]),
-            "emotion_words": get_word_count(word_categories["Emotion verbs"]),
+            "emotion_words": get_word_count(word_categories["Emotion words"]),
             "planning_words": get_word_count(word_categories["Planning words"]),
             "weak_language": get_word_count(word_categories["Weak language (confidence killers)"]),
             "discourse_markers": get_word_count(word_categories["Discourse markers"]),

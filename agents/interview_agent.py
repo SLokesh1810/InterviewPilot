@@ -1,6 +1,13 @@
 import json
+import os
+import random
 
 from agents.llm_generator import llm_generation
+from dotenv import load_dotenv
+
+load_dotenv()
+
+USE_LLM = os.getenv("USE_LLM", "False").lower() == "true"
 
 def generate_question(
     position,
@@ -11,6 +18,11 @@ def generate_question(
     """
     Generate a single interview question.
     """
+
+    if not USE_LLM:
+        return (
+            "<Dummy question generation>"
+        )
 
     prompt = f"""
     You are a senior hiring manager.
@@ -54,7 +66,20 @@ def follow_up_question(
     """
     Determine whether a follow-up is required.
     """
+    if not USE_LLM:
+        follow_up = random.randint(0, 1) == 0
 
+        if follow_up:
+            return {
+                "follow_up": False,
+                "question": None
+            }
+        else:
+            return {
+                "follow_up": True,
+                "question": "<Dummy follow up Question>"
+            }
+    
     prompt = f"""
     You are a senior technical interviewer.
 
@@ -104,49 +129,3 @@ def follow_up_question(
             "follow_up": False,
             "question": None
         }
-
-
-def scoring_system(
-    technical_scores,
-    communication_scores
-):
-    """
-    Calculate overall interview score.
-
-    Both inputs should contain values
-    between 0 and 10.
-    """
-
-    technical_avg = (
-        sum(technical_scores)
-        / len(technical_scores)
-        if technical_scores
-        else 0
-    )
-
-    communication_avg = (
-        sum(communication_scores)
-        / len(communication_scores)
-        if communication_scores
-        else 0
-    )
-
-    overall_score = (
-        technical_avg * 0.6
-        +
-        communication_avg * 0.4
-    ) * 10
-
-    return {
-        "overall_score":
-            round(overall_score, 2),
-
-        "technical_score":
-            round(technical_avg, 2),
-
-        "communication_score":
-            round(
-                communication_avg,
-                2
-            )
-    }

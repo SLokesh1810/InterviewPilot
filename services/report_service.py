@@ -1,9 +1,20 @@
 
+
+def get_average_score(
+    total_score,
+    count
+):
+    return round(
+        total_score / count, 2
+    )
+
 def score_calculator(
     communication_score,
     technical_score
 ):
-    return (communication_score * 40) + (technical_score * 60)
+    return round(
+        (communication_score * 0.4) + (technical_score * 0.6), 2
+    )
     
 def update_confidence(
     current_confidence,
@@ -16,21 +27,33 @@ def update_confidence(
         "fillers": current_confidence["fillers"] + new_confidence["fillers"]
     }
 
+def final_update_confidence(
+    current_confidence,
+    question_count
+):
+    
+    return {
+        "word_count": get_average_score(current_confidence["word_count"], question_count),
+        "wpm": get_average_score(current_confidence["wpm"], question_count),
+        "fillers": get_average_score(current_confidence["fillers"], question_count)
+    }
+
 async def update_report(
     current_report,
     analyser_report,
     technical_evaluation
-):
+):  
     ovr_score = score_calculator(
         analyser_report["score"]["communication"],
         technical_evaluation["score"]
     )
 
-    if current_report is None:
+    if current_report == {}:
         current_report = analyser_report
 
         current_report["questions_processed"] = 1
 
+        current_report["score"]["relevance_score"] = technical_evaluation["score"]
         current_report["score"]["overall"] = ovr_score
         current_report["missing_concepts"] = technical_evaluation["missing_concepts"]
 
@@ -77,17 +100,17 @@ async def update_report(
 
     current_report["pause_analysis"]["total_pauses"] += pause_analysis["total_pauses"]
     current_report["pause_analysis"]["long_pauses"] += pause_analysis["long_pauses"]
-    current_report["pause_analysis"]["avg_pauses"] += pause_analysis["avg_pauses"]
+    current_report["pause_analysis"]["avg_pause_duration"] += pause_analysis["avg_pause_duration"]
 
     # Filler analysis update
     filler_analysis = analyser_report["filler_analysis"]
 
     current_report["filler_analysis"]["filler_words"] += filler_analysis["filler_words"]
-    current_report["filler_analysis"]["filler_phases"] += filler_analysis["filler_phases"]
-    current_report["filler_analysis"]["total_filler"] += filler_analysis["total_fillers"]
+    current_report["filler_analysis"]["filler_phrases"] += filler_analysis["filler_phrases"]
+    current_report["filler_analysis"]["total_fillers"] += filler_analysis["total_fillers"]
 
     # Confidence analysis update
-    confidence_analysis = analyser_report["confidence_analysis"]
+    confidence_analysis = analyser_report["confidence_drift"]
 
     current_report["confidence_drift"]["start"] = update_confidence(
         current_report["confidence_drift"]["start"],
@@ -108,14 +131,6 @@ async def update_report(
 
     return current_report
 
-def get_average_score(
-    total_score,
-    count
-):
-    return round(
-        total_score / count, 2
-    )
-
 def final_score_update(
     report,
     question_count
@@ -128,12 +143,12 @@ def final_score_update(
     # Finalizing scores
     scores = report["score"]
 
-    report["score"]["fluency"] = final_score_update(scores["fluency"], question_count)
-    report["score"]["confidence"] = final_score_update(scores["confidence"], question_count)
-    report["score"]["clarity"] = final_score_update(scores["clarity"], question_count)
-    report["score"]["communication"] = final_score_update(scores["communication"],question_count)
-    report["score"]["technical"] = final_score_update(scores["technical"], question_count)
-    report["score"]["overall"] = round(scores["overall"], question_count)
+    report["score"]["fluency"] = get_average_score(scores["fluency"], question_count)
+    report["score"]["confidence"] = get_average_score(scores["confidence"], question_count)
+    report["score"]["clarity"] = get_average_score(scores["clarity"], question_count)
+    report["score"]["communication"] = get_average_score(scores["communication"],question_count)
+    report["score"]["relevance_score"] = get_average_score(scores["relevance_score"], question_count)
+    report["score"]["overall"] = get_average_score(scores["overall"], question_count)
 
     # Creating percentages for word category
     word_category = report["word_categories"]
@@ -173,35 +188,35 @@ def final_score_update(
 
     # Finalizing pause analysis
 
-    report["pause_analysis"]["avg_pauses"] = get_average_score(
-        report["pause_analysis"]["avg_pause"],
+    report["pause_analysis"]["avg_pause_duration"] = get_average_score(
+        report["pause_analysis"]["avg_pause_duration"],
         question_count
     )
 
     # Finalizing filler analysis
 
     report["filler_analysis"]["avg_filler"] = get_average_score(
-        report["filler_analysis"]["avg_filler"],
+        report["filler_analysis"]["total_fillers"],
         question_count
     )
 
     # Finalizing wpm in confidence_analysis
 
-    report["confidence_drift"]["start"] = get_average_score(
+    report["confidence_drift"]["start"] = final_update_confidence(
         report["confidence_drift"]["start"],
         question_count
     )
-    report["confidence_drift"]["middle"] = get_average_score(
+    report["confidence_drift"]["middle"] = final_update_confidence(
         report["confidence_drift"]["middle"],
         question_count
     )
-    report["confidence_drift"]["end"] = get_average_score(
+    report["confidence_drift"]["end"] = final_update_confidence(
         report["confidence_drift"]["end"],
         question_count
     )
 
     # Removing duplicate missing_concepts
 
-    report["missing_concepts"] = set(report["missing_concepts"])
+    report["missing_concepts"] = list(set(report["missing_concepts"]))
 
     return report

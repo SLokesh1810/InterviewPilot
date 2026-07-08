@@ -1,6 +1,6 @@
 
 from collections import Counter
-from ..audio_extractor.config import WORD_CATEGORIES
+from audio_extractor.config import WORD_CATEGORIES
 
 def categorize_words(words):
     """

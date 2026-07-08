@@ -1,0 +1,38 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: interviewpilot-backend
+
+    ports:
+      - "8000:8000"
+
+    env_file:
+      - .env.docker
+
+    volumes:
+      - .:/app
+
+    depends_on:
+      - db
+
+  db:
+    image: postgres:16
+
+    container_name: interviewpilot-db
+
+    ports:
+      - "5432:5432"
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: interviewpilot
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

@@ -1,7 +1,12 @@
 import json
+import os
 
 from llm_generator import llm_generation
+from dotenv import load_dotenv
 
+load_dotenv()
+
+USE_LLM = os.getenv("USE_LLM", "False").lower() == "true"
 
 def generate_final_feedback(
     position,
@@ -9,6 +14,15 @@ def generate_final_feedback(
     experience_level,
     report_data
 ):
+    if not USE_LLM:
+        return {
+            "summary": "<Dummy feedback from agent>",
+            "strengths": ["<Dummy strength>"],
+            "weaknesses": ["<Dummy weakness>"],
+            "areas_of_improvement": ["<Dummy improvements>"],
+            "recommendation": "<Dummy recommendation>"
+        }
+
     prompt = f"""
     You are an experienced technical interviewer.
     Candidate Information:
@@ -76,6 +90,5 @@ def generate_final_feedback(
             "strengths": [],
             "weaknesses": [],
             "areas_of_improvement": [],
-            "recommendation": "Manual review required.",
-            "final_score": 0
+            "recommendation": "Manual review required."
         }

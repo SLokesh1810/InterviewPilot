@@ -1,11 +1,9 @@
 from datetime import datetime
 
-from database.interview_models import (
+from models.interview_models import (
     ActiveInterview,
     InterviewHistory
 )
-
-from report_service import final_score_update
 
 def check_user_in_db(
         db,
@@ -23,7 +21,7 @@ def create_interview(
     user_id,
     position,
     experience_level,
-    difficulty_level=None,
+    role,
     time_duration=1800
 ):
     
@@ -33,13 +31,13 @@ def create_interview(
     )
     
     if active:
-        return None
+        return True, active
 
     interview = ActiveInterview(
         user_id=user_id,
         position=position,
+        role=role,
         experience_level=experience_level,
-        difficulty_level=difficulty_level,
         remaining_time=time_duration,
         current_question=' '
     )
@@ -48,7 +46,7 @@ def create_interview(
     db.commit()
     db.refresh(interview)
 
-    return interview
+    return False, interview
 
 
 def get_interview(
@@ -102,41 +100,7 @@ def save_response(
     if not interview:
         return None
     
-    interview.report = report
-
-    history = (
-        interview.interview_data
-        .get("history", [])
-    )
-
-    history.append(
-        {
-            "question": question,
-            "answer": transcript,
-            "audio_path": audio_path,
-            "technical_score":
-                technical_evaluation[
-                    "score"
-                ],
-            "technical_feedback":
-                technical_evaluation[
-                    "feedback"
-                ],
-            "missing_concepts":
-                technical_evaluation[
-                    "missing_concepts"
-                ],
-            "communication_score":
-                communication_score,
-            "timestamp":
-                datetime.utcnow()
-                .isoformat()
-        }
-    )
-
-    interview.interview_data = {
-        "history": history
-    }
+    interview.report_data = report
 
     db.commit()
     db.refresh(interview)
@@ -193,9 +157,8 @@ def update_status(
     )
 
     if q_count < 2: status = "intro"
-    elif q_count < 5: status = "basic technical"
-    elif q_count < 8: status = "advanced technical"
-    elif q_count < 10: status = "behavioural"
+    elif q_count < 4: status = "basic technical"
+    elif q_count < 6: status = "behavioural"
     else: status = "completed"
 
     interview.status = status
@@ -267,11 +230,17 @@ def complete_interview(
     if not interview:
         return None
 
-    scores = report_json['scores']
+    scores = report_json['score']
 
-    ovr = scores["overall"]
-    tech = scores["technical"]
-    comm = scores["communication"]
+    if scores:
+        ovr = scores["overall"]
+        tech = scores["relevance_score"]
+        comm = scores["communication"]
+    
+    else:
+        ovr = 0
+        tech = 0
+        comm = 0
     
 
     final_report = InterviewHistory(
@@ -282,8 +251,7 @@ def complete_interview(
         overall_score=ovr,
         technical_score=tech,
         communication_score=comm,
-        report=report_json,
-        interview_data=interview.interview_data
+        report=report_json
     )
 
     db.add(
@@ -295,3 +263,28 @@ def complete_interview(
     db.commit()
 
     return final_report
+
+def get_user_interviews(
+        db,
+        user_id
+    ):
+    return (
+        db.query(InterviewHistory)
+        .filter(InterviewHistory.user_id == user_id)
+        .order_by(InterviewHistory.created_at.desc())
+        .all()
+    )
+
+def get_interview_by_id(
+        db,
+        user_id,
+        interview_id
+    ):
+    return (
+        db.query(InterviewHistory)
+        .filter(
+            InterviewHistory.user_id == user_id,
+            InterviewHistory.id == interview_id
+        )
+        .first()
+    )

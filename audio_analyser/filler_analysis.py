@@ -1,4 +1,4 @@
-from ..audio_extractor.config import FILLER_WORDS, FILLER_PHRASES
+from audio_extractor.config import FILLER_WORDS, FILLER_PHRASES
 
 def count_filler_words(words):
     """

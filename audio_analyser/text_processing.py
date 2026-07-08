@@ -1,5 +1,5 @@
 
-from ..audio_extractor.config import WORD_PATTERN
+from audio_extractor.config import WORD_PATTERN
 
 def clean_text(text):
     """

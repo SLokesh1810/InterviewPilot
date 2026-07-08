@@ -1,33 +1,38 @@
 import subprocess
 import os
 
-FFMPEG_PATH = r"C:\ffmpeg\ffmpeg-2026-02-04-git-627da1111c-full_build\bin\ffmpeg.exe"
+from dotenv import load_dotenv
+
+load_dotenv()
+
+FFMPEG_PATH = os.getenv("FFMPEG_PATH", "ffmpeg")
 
 def convert(path: str) -> str:
     """
-    Convert a video file (mp4/mkv/etc.) to mono 16kHz WAV.
-    Returns path to generated WAV file.
+    Convert any FFmpeg-supported audio/video file
+    (mp4, mkv, mp3, m4a, wav, etc.) to mono 16kHz WAV.
+
+    Returns the path to the generated WAV file.
     """
 
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"Input file not found: {path}")
+
     base, _ = os.path.splitext(path)
-    video_path = base + ".mp4"
-
-    if not os.path.exists(video_path):
-        raise FileNotFoundError(f"Input file not found: {video_path}")
-
     audio_path = base + ".wav"
 
     command = [
         FFMPEG_PATH,
         "-y",
-        "-i", video_path,
-        "-vn",
-        "-ac", "1",
-        "-ar", "16000",
+        "-i", path,
+        "-vn",          # Ignore video if present
+        "-ac", "1",     # Mono
+        "-ar", "16000", # 16 kHz
         audio_path
     ]
 
     subprocess.run(command, check=True)
+
     print(f"Audio extracted successfully → {audio_path}")
 
     return audio_path

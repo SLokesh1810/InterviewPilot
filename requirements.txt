@@ -1,20 +1,44 @@
 --extra-index-url https://download.pytorch.org/whl/cu118
 
-openai-whisper
+# AI
 google-generativeai
+openai-whisper
 
+# PyTorch
 torch==2.0.1+cu118
 torchvision==0.15.2+cu118
 torchaudio==2.0.2+cu118
 
+# Audio Processing
 librosa>=0.10
+soundfile>=0.12
+
+# Data
 numpy==1.26.4
 pandas>=1.5
 nltk>=3.8
 matplotlib>=3.7
-soundfile>=0.12
 tqdm>=4.65
 
-python-dotenv>=0.21
+# Backend
+fastapi==0.116.1
+uvicorn[standard]>=0.30
+SQLAlchemy==2.0.41
+pydantic==2.11.7
 
-sqlalchemy>=2.0
+# Database
+psycopg2-binary>=2.9
+
+# Authentication
+python-jose[cryptography]>=3.3
+passlib[bcrypt]>=1.7
+bcrypt==4.0.1
+
+# Validation
+email-validator>=2.2
+
+# File Upload
+python-multipart>=0.0.9
+
+# Environment
+python-dotenv==1.1.1

@@ -1,6 +1,13 @@
 import json
+import os
+import random
 
-from llm_generator import llm_generation
+from .llm_generator import llm_generation
+from dotenv import load_dotenv
+
+load_dotenv()
+
+USE_LLM = os.getenv("USE_LLM", "False").lower() == "true"
 
 def answer_evaluation(question, answer):
     """
@@ -8,6 +15,12 @@ def answer_evaluation(question, answer):
     Communication metrics will be handled
     by the speech analysis module.
     """
+
+    if not USE_LLM:
+        return {
+            "score": random.randint(0, 10), 
+            "missing_concepts": ['<Dummy concept>']
+        }
 
     prompt = f"""
     You are a senior interviewer.
