@@ -1,0 +1,444 @@
+{
+  "info": {
+    "_postman_id": "30585bf5-faae-490b-b678-b3d5462ace02",
+    "name": "InterviewPilot",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "52790560",
+    "_collection_link": "https://go.postman.co/collection/52790560-30585bf5-faae-490b-b678-b3d5462ace02?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "signup",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "\r",
+              "if (responseCode.code === 200) {\r",
+              "    pm.test(\"Status code is 200\", function () {\r",
+              "        pm.expect(responseCode.code).to.eql(200);\r",
+              "    });\r",
+              "} else {\r",
+              "    pm.test(\"Status code is not 409\", function () {\r",
+              "        pm.expect(responseCode.code).to.eql(409);\r",
+              "    });\r",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"test_user_1\",\r\n  \"email\": \"test_user_1@example.com\",\r\n  \"password\": \"test_user_1\"\r\n}\r\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}auth/signup",
+          "host": [
+            "{{base_url}}auth"
+          ],
+          "path": [
+            "signup"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const responseData = pm.response.json();\r",
+              "const token = responseData.access_token;\r",
+              "\r",
+              "if (token) {\r",
+              "    pm.collectionVariables.set(\"auth_token\", token);\r",
+              "    pm.test(\"Token is set in environment\");\r",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"email\": \"test_user_1@example.com\",\r\n  \"password\": \"test_user_1\"\r\n}\r\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}auth/login",
+          "host": [
+            "{{base_url}}auth"
+          ],
+          "path": [
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "auth_endpoint",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}auth/me",
+          "host": [
+            "{{base_url}}auth"
+          ],
+          "path": [
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "start_interview",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const responseData = pm.response.json();\r",
+              "\r",
+              "switch (pm.response.code) {\r",
+              "    case 200:\r",
+              "        pm.collectionVariables.set(\"interview_id\", responseData.interview_id);\r",
+              "        pm.test(\"Interview started successfully\");\r",
+              "        break;\r",
+              "\r",
+              "    case 400:\r",
+              "        pm.collectionVariables.set(\"interview_id\", responseData.detail.interview_id);\r",
+              "        pm.test(\"Interview is already created\");\r",
+              "        break;\r",
+              "}\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"position\": \"SDE I\",\r\n  \"role\": \"Engineer\",\r\n  \"experience_level\": \"2\",\r\n  \"difficulty\": \"Easy\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}interview/start",
+          "host": [
+            "{{base_url}}interview"
+          ],
+          "path": [
+            "start"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "submit_answer",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "audio",
+              "type": "file",
+              "uuid": "042a7167-5b3a-4abe-b0f3-2504e965be55",
+              "src": "D:/Lokesh files/Projects/InterviewPilot/postman/test_files/SELF INTRODUCTION.mp3"
+            },
+            {
+              "key": "interview_id",
+              "value": "{{interview_id}}",
+              "type": "text",
+              "uuid": "d43754c5-18eb-462d-bc46-eb8e2b59f841"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}interview/submit-answer",
+          "host": [
+            "{{base_url}}interview"
+          ],
+          "path": [
+            "submit-answer"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "interview_status",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": ""
+        },
+        "url": {
+          "raw": "{{base_url}}interview/status/{{interview_id}}",
+          "host": [
+            "{{base_url}}interview"
+          ],
+          "path": [
+            "status",
+            "{{interview_id}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "finish_interview",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}interview/finish/{{interview_id}}",
+          "host": [
+            "{{base_url}}interview"
+          ],
+          "path": [
+            "finish",
+            "{{interview_id}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "get_interviews",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}interview/history",
+          "host": [
+            "{{base_url}}interview"
+          ],
+          "path": [
+            "history"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "get_single_interview",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}interview/history/{{interview_id}}",
+          "host": [
+            "{{base_url}}interview"
+          ],
+          "path": [
+            "history",
+            "{{interview_id}}"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{auth_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/"
+    },
+    {
+      "key": "auth_token",
+      "value": ""
+    },
+    {
+      "key": "interview_id",
+      "value": ""
+    }
+  ]
+}
