@@ -223,7 +223,7 @@
               "key": "audio",
               "type": "file",
               "uuid": "042a7167-5b3a-4abe-b0f3-2504e965be55",
-              "src": "D:/Lokesh files/Projects/InterviewPilot/postman/test_files/SELF INTRODUCTION.mp3"
+              "src": "postman/test_files/SELF INTRODUCTION.mp3"
             },
             {
               "key": "interview_id",
