@@ -25,6 +25,15 @@ jobs:
       - name: Install Newman
         run: npm install -g newman
 
+      - name: Create .env.docker
+        run: |
+            echo "GOOGLE_API_KEY=" >> .env.docker
+            echo "USE_LLM=False" >> .env.docker
+            echo "BASE_PATH=/app/data" >> .env.docker
+            echo "DATABASE_URL=postgresql://postgres:postgres@db:5432/interviewpilot" >> .env.docker
+            echo "SECRET_KEY=fake_key_for_test" >> .env.docker
+            echo "FFMPEG_PATH=ffmpeg" >> .env.docker
+
       - name: Build Docker Containers
         run: docker compose build
 
@@ -33,12 +42,20 @@ jobs:
 
       - name: Wait for Backend
         run: |
-          sleep 30
+          until curl -f http://localhost:8000/docs; do
+            echo "Waiting for backend..."
+            sleep 2
+          done
 
       - name: Run Newman Tests
         run: |
           newman run postman/collections/InterviewPilot.postman_collection.json --reporters cli
 
+
+      - name: Show Backend Logs
+        if: failure()
+        run: docker compose logs backend
+        
       - name: Stop Docker Containers
         if: always()
         run: docker compose down
