@@ -15,10 +15,6 @@ from audio_analyser.pipeline import analyze_transcript
 from audio_analyser.transcription import (
     transcribe_audio
 )
-from audio_analyser.output import (
-    print_analysis_results,
-    save_json as save_json_output
-)
 
 def get_transcript(
     base_path,
@@ -58,17 +54,10 @@ def analyze_audio(
         transcript,
         audio_duration_sec,
         pause_data,
-        base_path,
-        audio_filename,
         top_k=DEFAULT_TOP_K,
         long_sentence_threshold=DEFAULT_LONG_SENTENCE_THRESHOLD,
-        top_phrases=DEFAULT_TOP_PHRASES,
-        return_json=False,
-        save_json=False
+        top_phrases=DEFAULT_TOP_PHRASES
     ):
-    """
-    Run transcript analysis.
-    """
 
     analysis_results = analyze_transcript(
         transcript,
@@ -79,16 +68,6 @@ def analyze_audio(
         pause_data
     )
 
-    if save_json:
-        save_json_output(
-            analysis_results,
-            base_path,
-            audio_filename
-        )
-
-    if not return_json:
-        print_analysis_results(analysis_results)
-
     return analysis_results
 
 def main(
@@ -97,9 +76,7 @@ def main(
     model_size=DEFAULT_MODEL_SIZE,
     top_k=DEFAULT_TOP_K,
     long_sentence_threshold=DEFAULT_LONG_SENTENCE_THRESHOLD,
-    top_phrases=DEFAULT_TOP_PHRASES,
-    return_json=False,
-    save_json=False
+    top_phrases=DEFAULT_TOP_PHRASES
 ):
 
     transcript_data = get_transcript(
@@ -116,9 +93,7 @@ def main(
         audio_filename=audio_filename,
         top_k=top_k,
         long_sentence_threshold=long_sentence_threshold,
-        top_phrases=top_phrases,
-        return_json=return_json,
-        save_json=save_json
+        top_phrases=top_phrases
     )
 
     return analysis_results, transcript_data["transcript"]

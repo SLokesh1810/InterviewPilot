@@ -37,9 +37,7 @@ async def analyse_transcript(
         audio_filename=audio_name,
         top_k=3,
         long_sentence_threshold=25,
-        top_phrases=3,
-        return_json=True,
-        save_json=False
+        top_phrases=3
     )
 
     scores = report["score"]
