@@ -15,15 +15,9 @@
           "script": {
             "exec": [
               "\r",
-              "if (responseCode.code === 200) {\r",
-              "    pm.test(\"Status code is 200\", function () {\r",
-              "        pm.expect(responseCode.code).to.eql(200);\r",
-              "    });\r",
-              "} else {\r",
-              "    pm.test(\"Status code is not 409\", function () {\r",
-              "        pm.expect(responseCode.code).to.eql(409);\r",
-              "    });\r",
-              "}"
+              "pm.test(\"Signup succeeded or user already exists\", function () { \r",
+              "pm.expect([201, 409]).to.include(pm.response.code); \r",
+              "});\r"
             ],
             "type": "text/javascript",
             "packages": {},
