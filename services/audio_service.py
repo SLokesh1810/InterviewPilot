@@ -24,7 +24,6 @@ def retrieve_transcript(audio_name):
 
 
 async def analyse_transcript(
-    audio_name,
     audio_duration_sec,
     pause_data,
     transcript
@@ -33,8 +32,6 @@ async def analyse_transcript(
         transcript=transcript,
         audio_duration_sec=audio_duration_sec,
         pause_data=pause_data,
-        base_path=BASE_PATH,
-        audio_filename=audio_name,
         top_k=3,
         long_sentence_threshold=25,
         top_phrases=3

@@ -132,7 +132,6 @@ async def submit_question(
             }
 
         analysis_report = await analyse_transcript(
-            audio_name=transcript_details['audio_path'],
             audio_duration_sec=transcript_details['audio_duration_sec'],
             pause_data=transcript_details['pause_data'],
             transcript=transcript_details['transcript']
